@@ -1,0 +1,9 @@
+Mandelbrot Studio — final reference edition
+
+Extract into public_html/apps/mandelbrot/ and overwrite. Press Ctrl+F5.
+
+New reference-matched scientific illustration, shallow brass-framed live render, single-line metadata, serif controls, paper texture and compact palette row. Shared compass logo retained.
+
+Zoom out and Reset view below the canvas are functional. Palette Position changes the selected stop. Reverse and Reset gradient are retained under More palette options. High-precision maths and rendering modules remain unchanged; app.js and GradientEditor.js only have the new control bindings.
+
+Verified rendering, zoom out, reset, palette stop position, and phone/tablet layouts without horizontal overflow.

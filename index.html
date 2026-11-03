@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Explore the Mandelbrot set with progressive rendering, high-precision coordinates and an editable colour palette.">
+<title>Mandelbrot Studio — Jenga-Code</title>
+<link rel="canonical" href="https://jenga-code.com/apps/mandelbrot/">
+<link rel="stylesheet" href="css/style.css?v=mandelbrot-final-2">
+<script src="js/math/DoubleDouble.js"></script>
+<script src="js/math/ComplexDoubleDouble.js"></script>
+<script src="js/mandelbrot/MandelbrotInput.js"></script>
+<script src="js/mandelbrot/MandelbrotOutput.js"></script>
+<script src="js/mandelbrot/MandelbrotProcessor.js"></script>
+<script src="js/colour/GradientEntry.js"></script>
+<script src="js/colour/SmoothGradient.js"></script>
+<script src="js/colour/GradientEditor.js?v=final-2"></script>
+<script src="js/render/CoordinateMapper.js"></script>
+<script src="js/render/CanvasRenderer.js"></script>
+<script src="js/render/ProgressiveRenderer.js"></script>
+<script defer src="js/app.js?v=final-2"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to fractal</a>
+<header class="site-header"><a class="brand" href="/" aria-label="Jenga-Code homepage"><svg class="compass-mark" aria-hidden="true" viewBox="0 0 64 64" width="54" height="54"><circle cx="32" cy="32" r="23" fill="none" stroke="currentColor" stroke-width="1"/><path d="M32 2 38 26 62 32 38 38 32 62 26 38 2 32 26 26Z" fill="none" stroke="currentColor"/><path d="M32 7 32 32 26 26ZM57 32 32 32 38 26ZM32 57 32 32 38 38ZM7 32 32 32 26 38Z" fill="currentColor"/><circle cx="32" cy="32" r="3" fill="currentColor"/></svg><span>Jenga-Code<small>ALGORITHMS · GAMES · MATHEMATICAL IDEAS</small></span></a><nav aria-label="Main navigation"><a href="/">Home</a><a href="/apps/" aria-current="page">Applications</a><a href="/blog/">Journal</a><a href="/qualifications/">Qualifications</a></nav></header>
+<main class="publication" id="main">
+<aside class="editorial"><img src="images/fractal-study.webp" width="800" height="1200" alt="Brass dividers and a magnifying lens studying a fractal boundary, with geometric constructions and botanical leaves" fetchpriority="high"><h2><span>Infinite</span> detail.</h2><span class="short-rule"></span><p>Explore the Mandelbrot set, one zoom at a time.</p><p class="editorial-note">Zoom into the detail and experiment with colours and calculation depth.</p><div class="editorial-flourish" aria-hidden="true">✧</div></aside>
+<div class="studio-column"><header class="page-heading"><h1>Mandelbrot Studio</h1><p>Drag across the image to zoom in.</p></header>
+<section aria-label="Fractal render" class="visualiser-panel">
+<!-- Status -->
+<div class="fractal-status">
+<div class="status-item">
+<span>
+                                    Magnification
+                                </span>
+<strong id="magnificationDisplay">
+                                    1×
+                                </strong>
+</div>
+<div class="status-item">
+<span>
+                                    Iterations
+                                </span>
+<strong id="iterationDisplay">
+                                    500
+                                </strong>
+</div>
+<div class="status-item">
+<span>
+                                    RENDER PASS
+                                </span>
+<strong id="renderPassDisplay">
+                                    —
+                                </strong>
+</div>
+<div class="status-item">
+<span>
+                                    Render time
+                                </span>
+<strong id="renderTimeDisplay">
+                                    —
+                                </strong>
+</div>
+</div>
+<!-- Canvas -->
+<div class="canvas-shell">
+<div class="canvas-container">
+<canvas aria-label="Mandelbrot set; drag a rectangle to zoom" height="600" id="mandelbrotCanvas" width="1020">
+
+                                    Your browser needs canvas support to
+                                    display the fractal.
+
+                                </canvas>
+<div class="render-overlay" id="renderOverlay">
+<span>
+                                        RENDERING
+                                    </span>
+</div>
+</div>
+<div class="render-progress">
+<div aria-label="Render progress" aria-valuemax="100" aria-valuemin="0" aria-valuenow="0" class="render-progress-bar" id="renderProgressBar" role="progressbar">
+</div>
+</div>
+</div>
+
+</section><div class="render-feedback"><button id="zoomOutButton" type="button">Zoom out</button><button id="canvasResetButton" type="button">Reset view</button><span id="renderState" role="status">Ready</span></div><section aria-labelledby="gradient-title" class="gradient-panel" id="gradient">
+<div class="gradient-heading">
+<div>
+<p class="eyebrow">
+                                COLOUR SYSTEM
+                            </p>
+<h2 id="gradient-title">
+                                Colour palette
+                            </h2>
+</div>
+<p>
+                            Select a stop to change its colour. Drag it to adjust its position.
+                        </p>
+</div>
+<div class="gradient-preview" id="gradientPreview">
+</div>
+<div class="gradient-stops" id="gradientStops">
+</div>
+<div class="gradient-controls">
+<div class="field-group">
+<label for="gradientColour">
+                                Selected colour
+                            </label>
+<input id="gradientColour" type="color" value="#00086A">
+</div>
+<div class="field-group">
+<label for="gradientMultiplier">
+                                Gradient multiplier
+                            </label>
+<input id="gradientMultiplier" max="1000" min="0.1" step="0.5" type="number" value="50">
+</div>
+<div class="field-group position-field"><label for="gradientPosition">Position</label><input id="gradientPosition" type="number" min="0" max="1" step="0.01" value="0"></div><div class="gradient-button-grid">
+<button class="button secondary" id="addColourButton" type="button">
+
+                                Add stop
+
+                            </button>
+<button class="button secondary" id="removeColourButton" type="button">
+
+                                Remove
+
+                            </button>
+
+
+</div>
+</div>
+<details class="palette-extras"><summary>More palette options</summary><button class="button secondary" id="reverseGradientButton" type="button">
+
+                                Reverse
+
+                            </button><button class="button secondary" id="resetGradientButton" type="button">
+
+                                Reset gradient
+
+                            </button></details></section></div><aside aria-label="Render controls" class="control-panel">
+<div class="control-heading">
+<p class="eyebrow">
+                                PARAMETERS
+                            </p>
+<h2>
+                                Render controls
+                            </h2>
+<p>
+                                Change the coordinates, magnification and
+                                calculation depth before rendering.
+                            </p>
+</div>
+<!-- Position -->
+<fieldset class="control-section">
+<legend>
+                                Position
+                            </legend>
+<div class="parameter-field "><label for="centerX">
+                                Centre X
+                            </label>
+<input class="text-input coordinate-input" id="centerX" spellcheck="false" type="text" value="-0.5"></div>
+<div class="parameter-field "><label for="centerY">
+                                Centre Y
+                            </label>
+<input class="text-input coordinate-input" id="centerY" spellcheck="false" type="text" value="0"></div>
+<div class="parameter-field full-field"><label for="magnification">
+                                Magnification
+                            </label>
+<input class="text-input" id="magnification" spellcheck="false" type="text" value="1"></div>
+</fieldset>
+<!-- Calculation -->
+<fieldset class="control-section">
+<legend>
+                                Calculation
+                            </legend>
+<div class="parameter-field "><label for="maxIterations">
+                                Maximum iterations
+                            </label>
+<input class="text-input" id="maxIterations" min="1" type="number" value="500"></div>
+<div class="parameter-field "><label for="bailout">
+                                Bailout
+                            </label>
+<input class="text-input" id="bailout" min="2" type="number" value="4"></div>
+<label class="toggle-row">
+<input checked id="smoothColouring" type="checkbox">
+<span>
+                                    Smooth colouring
+                                </span>
+</label>
+<label class="toggle-row">
+<input checked id="optimisations" type="checkbox">
+<span>
+                                    Escape optimisations
+                                </span>
+</label>
+</fieldset>
+<!-- Actions -->
+<div class="control-actions">
+<button class="button primary" id="renderButton" type="button">
+<span>
+                                    Render fractal
+                                </span>
+<span>
+                                    →
+                                </span>
+</button>
+<div class="action-grid">
+<button class="button secondary" id="stopButton" type="button">
+
+                                    Stop
+
+                                </button>
+<button class="button secondary" id="resetButton" type="button">
+
+                                    Reset view
+
+                                </button>
+<button class="button secondary wide-action" id="downloadButton" type="button">
+
+                                    Download image
+
+                                </button>
+</div>
+</div><div class="render-tip"><i>✧ Tip</i><p>Increase the number of iterations to reveal finer detail when zoomed in.</p></div>
+</aside>
+</main><footer class="site-footer"><span>Jenga-Code · Mathematics</span><nav aria-label="Footer navigation"><a href="/apps/">All applications</a><a href="/privacy/">Privacy</a></nav></footer>
+</body></html>
